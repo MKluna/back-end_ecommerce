@@ -1,13 +1,15 @@
-import { COLLECTION } from "./../config/constants";
+import { findOneElement, insterOneElement } from "./../../lib/db-operation";
+import { COLLECTION } from ".././../config/constants";
 import { IResolvers } from "@graphql-tools/utils";
 import bcrypt from "bcrypt";
+import { assignDocumentID } from "../../lib/db-operation";
 
-const resolversMutation: IResolvers = {
+const resolversUserMutation: IResolvers = {
   Mutation: {
     async register(_, { user }, { db }) {
-      const userCheck = await db
-        .collection(COLLECTION.USERS)
-        .findOne({ email: user.email });
+      const userCheck = await findOneElement(db, COLLECTION.USERS, {
+        email: user.email,
+      });
 
       if (userCheck !== null) {
         return {
@@ -17,25 +19,12 @@ const resolversMutation: IResolvers = {
         };
       }
 
-      const lastUser = await db
-        .collection(COLLECTION.USERS)
-        .find()
-        .limit(1)
-        .sort({ registerDate: -1 })
-        .toArray();
-
-      if (lastUser.length === 0) {
-        user.id = 1;
-      } else {
-        user.id = lastUser[0].id + 1;
-      }
+      user.id = await assignDocumentID(db, COLLECTION.USERS);
 
       user.password = bcrypt.hashSync(user.password, 10);
       user.registerDate = new Date().toISOString();
 
-      return await db
-        .collection(COLLECTION.USERS)
-        .insertOne(user)
+      return await insterOneElement(db, COLLECTION.USERS, user)
         .then(async () => {
           return {
             status: true,
@@ -55,4 +44,4 @@ const resolversMutation: IResolvers = {
   },
 };
 
-export default resolversMutation;
+export default resolversUserMutation;

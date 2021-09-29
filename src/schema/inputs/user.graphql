@@ -1,0 +1,9 @@
+input UserInput {
+  id: ID
+  name: String!
+  lastname: String!
+  email: String!
+  password: String!
+  birthDay: String!
+  role: Role = ClIENT
+}

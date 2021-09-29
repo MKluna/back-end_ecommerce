@@ -1,16 +1,17 @@
 import bcrypt from "bcrypt";
-import { COLLECTION, MESSAGES } from "./../config/constants";
+import { COLLECTION, MESSAGES } from ".././../config/constants";
 import { IResolvers } from "@graphql-tools/utils";
-import JWT from "../lib/jwt";
+import JWT from "../../lib/jwt";
+import { findElements, findOneElement } from "../../lib/db-operation";
 
-const resolversQuery: IResolvers = {
+const resolversUserQuery: IResolvers = {
   Query: {
     async users(_, __, { db }) {
       try {
         return {
           status: true,
           message: "successful",
-          users: await db.collection(COLLECTION.USERS).find().toArray(),
+          users: await findElements(db, COLLECTION.USERS),
         };
       } catch (error) {
         console.error(error);
@@ -23,9 +24,7 @@ const resolversQuery: IResolvers = {
     },
     async login(_, { email, password }, { db }) {
       try {
-        const user = await db.collection(COLLECTION.USERS).findOne({
-          email,
-        });
+        const user = await findOneElement(db, COLLECTION.USERS, { email });
 
         if (!user) {
           return {
@@ -75,4 +74,4 @@ const resolversQuery: IResolvers = {
   },
 };
 
-export default resolversQuery;
+export default resolversUserQuery;
